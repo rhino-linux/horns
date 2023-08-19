@@ -1,0 +1,44 @@
+{
+    packages: {
+        managers: {
+            flatpak: true
+            snap: true
+            appimage: true
+        }
+        software: {
+            nala: true
+            gh-cli: true
+            apport: true
+        }
+        packages: {
+            apt: [
+                test
+                foobar
+            ]
+            pacstall: [
+                foobar-deb
+            ]
+            snap: []
+            flatpak: [
+                org.foo.bar
+            ]
+        }
+    }
+    users: [
+        {
+            name: "elsie"
+            home: /home/elsie
+            description: "foobar"
+            root: true
+            groups: ['games']
+            shell: /bin/zsh
+            password: true
+        },
+        {
+            name: "bob"
+            home: false
+            root: false
+            password: false
+        }
+    ]
+}

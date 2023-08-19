@@ -1,0 +1,5 @@
+#!/usr/bin/env nu
+
+def main [] -> int {
+    let sources = (open deploy.nuon)
+}
