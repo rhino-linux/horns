@@ -1,5 +1,88 @@
 #!/usr/bin/env nu
 
+def "setup-managers" [sources: list<any>] -> int {
+    let managers = ($sources.packages.managers | transpose manager booled)
+    for $mngr in $managers {
+        if $mngr.booled == true {
+            match $mngr.manager {
+                'flatpak' => { bash -c 'sudo apt-get install -y flatpak && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo' }
+                'snap' => { bash -c 'sudo apt-get install -y snapd' }
+                'appimage' => { bash -c 'sudo apt-get install -y libfuse2' }
+                _ => { return 1 }
+            }
+        }
+    }
+}
+
+def "setup-software" [sources: list<any>] -> int {
+    let software = ($sources.packages.software | transpose pkg booled)
+    for $soft in $software {
+        if $soft.booled == true {
+            match $soft.pkg {
+                'nala' => { pacstall -PI nala-deb }
+                'gh-cli' => { pacstall -PI github-cli-deb }
+                'apport' => { bash -c 'sudo apt-get install -y apport && sudo systemctl enable apport.service || true' }
+                _ => { print -e $"($soft.pkg) does not exist" and return 1 }
+            }
+        }
+    }
+}
+
+def "setup-packages" [sources: list<any>] -> int {
+    let pkgs = ($sources.packages.packages | transpose pkg-type pkgs)
+    for $base in $pkgs {
+        if $base.pkgs | not is-empty {
+            match $base.pkg-type {
+                'apt' => { bash -c $"sudo apt install ($base.pkgs)" }
+                'pacstall' => { pacstall -PI $base.pkgs }
+                'flatpak' => { bash -c $"sudo flatpak install ($base.pkgs)" }
+                'snap' => { bash -c $"sudo snap install ($base.pkgs)" }
+                _ => { print -e $"($base.pkg-type) does not exist" and return 1 }
+            }
+        }
+    }
+}
+
+def "setup-users" [sources: list<any>] -> int {
+    # Do we have users
+    if 'users' in ($sources) {
+        let users = ($sources.users)
+        for $user in $users {
+            mut cmd = ['sudo', 'useradd']
+            mut groups = []
+            if 'home' in ($user) {
+                if $user.home == false {
+                    $cmd ++= ['--no-create-home']
+                } else if $user.home == true {
+                    $cmd ++= ['--create-home']
+                } else if ($user.home | describe) == string {
+                    $cmd ++= ['--home-dir' $""($user.home)""]
+                }
+            } else {
+                $cmd ++= ['--create-home']
+            }
+            if 'comment' in ($user) {
+                $cmd ++= ['--comment', $""($user.comment)""]
+            }
+            if 'root' in ($user) {
+                if $user.root {
+                    $groups ++= ['sudo']
+                }
+            }
+            if 'groups' in ($user) {
+                $groups ++= [$user.groups]
+            }
+            $cmd ++= ['-G' $""($groups | flatten -a | str join ,)""]
+            # At the end
+            $cmd ++= [$user.name]
+            print $"Running (ansi green)($cmd | str join ' ')(ansi reset)"
+            # bash -c $"($cmd)"
+        }
+    } else {
+        return 0
+    }
+}
+
 def main [] -> int {
     let sources = (open deploy.nuon)
 }

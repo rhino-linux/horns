@@ -26,18 +26,17 @@
     }
     users: [
         {
-            name: "elsie"
-            home: /home/elsie
-            description: "foobar"
-            root: true
-            groups: ['games']
-            shell: /bin/zsh
-            password: true
-        },
-        {
             name: "bob"
             home: false
             root: false
+            password: false
+            groups: ['foo']
+            comment: "foobar"
+        },
+        {
+            name: "ellie"
+            home: /usr/ellie
+            root: true
             password: false
         }
     ]
