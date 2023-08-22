@@ -37,6 +37,7 @@
             name: "ellie"
             home: /usr/ellie
             root: true
+            groups: ['audio']
             password: false
         }
     ]

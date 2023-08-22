@@ -64,10 +64,8 @@ def "setup-users" [sources: list<any>] -> int {
             if 'comment' in ($user) {
                 $cmd ++= ['--comment', $""($user.comment)""]
             }
-            if 'root' in ($user) {
-                if $user.root {
-                    $groups ++= ['sudo']
-                }
+            if 'root' in ($user) and $user.root {
+                $groups ++= ['sudo']
             }
             if 'groups' in ($user) {
                 $groups ++= [$user.groups]
@@ -76,7 +74,7 @@ def "setup-users" [sources: list<any>] -> int {
             # At the end
             $cmd ++= [$user.name]
             print $"Running (ansi green)($cmd | str join ' ')(ansi reset)"
-            # bash -c $"($cmd)"
+            # bash -c $"($cmd | str join ' ')"
         }
     } else {
         return 0
