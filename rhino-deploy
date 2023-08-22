@@ -56,7 +56,7 @@ def "setup-users" [sources: list<any>] -> int {
                 } else if $user.home == true {
                     $cmd ++= ['--create-home']
                 } else if ($user.home | describe) == string {
-                    $cmd ++= ['--home-dir' $""($user.home)""]
+                    $cmd ++= ['--home-dir', $""($user.home)""]
                 }
             } else {
                 $cmd ++= ['--create-home']
@@ -70,11 +70,14 @@ def "setup-users" [sources: list<any>] -> int {
             if 'groups' in ($user) {
                 $groups ++= [$user.groups]
             }
-            $cmd ++= ['-G' $""($groups | flatten -a | str join ,)""]
+            $cmd ++= ['-G', $""($groups | flatten -a | str join ,)""]
             # At the end
             $cmd ++= [$user.name]
             print $"Running (ansi green)($cmd | str join ' ')(ansi reset)"
             # bash -c $"($cmd | str join ' ')"
+            if $user.password {
+                sudo passwd $user.name
+            }
         }
     } else {
         return 0
