@@ -5,10 +5,10 @@ def "setup-managers" [sources: list<any>] -> int {
     for $mngr in $managers {
         if $mngr.booled == true {
             match $mngr.manager {
-                'flatpak' => { bash -c 'sudo apt-get install -y flatpak && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo' }
-                'snap' => { bash -c 'sudo apt-get install -y snapd' }
+                'flatpak'  => { bash -c 'sudo apt-get install -y flatpak && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo' }
+                'snap'     => { bash -c 'sudo apt-get install -y snapd' }
                 'appimage' => { bash -c 'sudo apt-get install -y libfuse2' }
-                _ => { return 1 }
+                _          => { return 1 }
             }
         }
     }
@@ -19,10 +19,10 @@ def "setup-software" [sources: list<any>] -> int {
     for $soft in $software {
         if $soft.booled == true {
             match $soft.pkg {
-                'nala' => { pacstall -PI nala-deb }
+                'nala'   => { pacstall -PI nala-deb }
                 'gh-cli' => { pacstall -PI github-cli-deb }
                 'apport' => { bash -c 'sudo apt-get install -y apport && sudo systemctl enable apport.service || true' }
-                _ => { print -e $"($soft.pkg) does not exist" and return 1 }
+                _        => { print -e $"($soft.pkg) does not exist" and return 1 }
             }
         }
     }
@@ -33,11 +33,11 @@ def "setup-packages" [sources: list<any>] -> int {
     for $base in $pkgs {
         if $base.pkgs | not is-empty {
             match $base.pkg-type {
-                'apt' => { bash -c $"sudo apt install ($base.pkgs)" }
+                'apt'      => { bash -c $"sudo apt install ($base.pkgs)" }
                 'pacstall' => { pacstall -PI $base.pkgs }
-                'flatpak' => { bash -c $"sudo flatpak install ($base.pkgs)" }
-                'snap' => { bash -c $"sudo snap install ($base.pkgs)" }
-                _ => { print -e $"($base.pkg-type) does not exist" and return 1 }
+                'flatpak'  => { bash -c $"sudo flatpak install ($base.pkgs)" }
+                'snap'     => { bash -c $"sudo snap install ($base.pkgs)" }
+                _          => { print -e $"($base.pkg-type) does not exist" and return 1 }
             }
         }
     }
