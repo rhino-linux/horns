@@ -21,7 +21,7 @@ def "setup-software" [sources: list<any>] -> int {
             match $soft.pkg {
                 'nala'   => { pacstall -PI nala-deb }
                 'gh-cli' => { pacstall -PI github-cli-deb }
-                'apport' => { bash -c 'sudo apt-get install -y apport && sudo systemctl enable apport.service || true' }
+                'apport' => { bash -c 'sudo apt-get install -y apport && sudo systemctl enable apport.service' }
                 _        => { print -e $"($soft.pkg) does not exist" and return 1 }
             }
         }
@@ -31,7 +31,7 @@ def "setup-software" [sources: list<any>] -> int {
 def "setup-packages" [sources: list<any>] -> int {
     let pkgs = ($sources.packages.packages | transpose pkg-type pkgs)
     for $base in $pkgs {
-        if $base.pkgs | not is-empty {
+        if ($base.pkgs | not is-empty) {
             match $base.pkg-type {
                 'apt'      => { bash -c $"sudo apt install ($base.pkgs)" }
                 'pacstall' => { pacstall -PI $base.pkgs }
@@ -86,4 +86,10 @@ def "setup-users" [sources: list<any>] -> int {
 
 def main [] -> int {
     let sources = (open deploy.nuon)
+    let to_reboot = (input $"Finished deploying. Reboot? [(ansi green)Y(ansi reset)/(ansi red)N(ansi reset)] ")
+    if ($to_reboot | str starts-with -i 'Y') or ($to_reboot | is-empty) {
+        sudo shutdown -r now 'Rebooting after deploying'
+    } else {
+        exit 0
+    }
 }
